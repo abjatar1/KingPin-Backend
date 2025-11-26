@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "bcrypt": "^5.1.0"
   },
   "name": "kingpin-backend",
   "description": "",
