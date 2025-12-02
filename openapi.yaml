@@ -1,0 +1,676 @@
+openapi: 3.0.3
+info:
+  title: KingPin Backend API
+  version: 1.0.0
+  description: API spec generated from the current server implementation. Passwords are passed in request bodies for protected actions (development only).
+servers:
+  - url: http://localhost:3000
+paths:
+  /accounts:
+    post:
+      summary: Create a user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserPublic'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /accounts/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      summary: Get public user info
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserPublic'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete account (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthPassword'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /accounts/{userId}/password:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      summary: Change password (requires current password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+      responses:
+        '200':
+          description: Password changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /accounts/{userId}/displayName:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      summary: Change display name (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                displayName:
+                  type: string
+              required:
+                - password
+                - displayName
+      responses:
+        '200':
+          description: Display name updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/UserPublic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/{userId}/teams:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      summary: Create a team for the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                displayName:
+                  type: string
+              required:
+                - password
+      responses:
+        '201':
+          description: Team created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/Team'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    get:
+      summary: List teams for a user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Team'
+
+  /users/{userId}/teams/{teamId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+    get:
+      summary: Get a single team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/Team'
+    put:
+      summary: Update team (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                displayName:
+                  type: string
+              required:
+                - password
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  team:
+                    $ref: '#/components/schemas/Team'
+    delete:
+      summary: Delete a team (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthPassword'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /users/{userId}/teams/{teamId}/players:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+    post:
+      summary: Create a player in a team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                displayName:
+                  type: string
+                graduationYear:
+                  type: integer
+              required:
+                - password
+      responses:
+        '201':
+          description: Player created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  player:
+                    $ref: '#/components/schemas/Player'
+    get:
+      summary: List players in a team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  players:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Player'
+
+  /users/{userId}/teams/{teamId}/players/{playerId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/PlayerId'
+    get:
+      summary: Get a player
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  player:
+                    $ref: '#/components/schemas/Player'
+    put:
+      summary: Update a player (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                displayName:
+                  type: string
+                graduationYear:
+                  type: integer
+              required:
+                - password
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  player:
+                    $ref: '#/components/schemas/Player'
+    delete:
+      summary: Delete a player (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthPassword'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /users/{userId}/teams/{teamId}/matches:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+    post:
+      summary: Create a match for a team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                date:
+                  type: integer
+                opposingTeamName:
+                  type: string
+                comment:
+                  type: string
+              required:
+                - password
+      responses:
+        '201':
+          description: Match created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match:
+                    $ref: '#/components/schemas/Match'
+    get:
+      summary: List matches for a team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  matches:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Match'
+
+  /users/{userId}/teams/{teamId}/matches/{matchId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/MatchId'
+    get:
+      summary: Get a match
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match:
+                    $ref: '#/components/schemas/Match'
+    put:
+      summary: Update match meta (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                date:
+                  type: integer
+                opposingTeamName:
+                  type: string
+                comment:
+                  type: string
+              required:
+                - password
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  match:
+                    $ref: '#/components/schemas/Match'
+    delete:
+      summary: Delete a match (requires password)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthPassword'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /users/{userId}/teams/{teamId}/matches/{matchId}/players/{playerId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/MatchId'
+      - $ref: '#/components/parameters/PlayerId'
+    get:
+      summary: Get per-player data for a match
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  perPlayerData:
+                    $ref: '#/components/schemas/PerPlayerData'
+
+  /users/{userId}/teams/{teamId}/matches/{matchId}/players/{playerId}/games/{gameIndex}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+      - $ref: '#/components/parameters/TeamId'
+      - $ref: '#/components/parameters/MatchId'
+      - $ref: '#/components/parameters/PlayerId'
+      - name: gameIndex
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 3
+    put:
+      summary: Set game entry for a player (1..3)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameEntry'
+      responses:
+        '200':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playerGame:
+                    $ref: '#/components/schemas/GameEntry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+    TeamId:
+      name: teamId
+      in: path
+      required: true
+      schema:
+        type: string
+    PlayerId:
+      name: playerId
+      in: path
+      required: true
+      schema:
+        type: string
+    MatchId:
+      name: matchId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    UserPublic:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        teamIds:
+          type: object
+          additionalProperties:
+            type: boolean
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+      required:
+        - email
+        - password
+        - username
+    AuthPassword:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+    PasswordChange:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+        newPassword:
+          type: string
+      required:
+        - currentPassword
+        - newPassword
+    Team:
+      type: object
+      properties:
+        teamId:
+          type: string
+        ownerId:
+          type: string
+        displayName:
+          type: string
+        playerIds:
+          type: object
+          additionalProperties:
+            type: boolean
+        awardsList:
+          type: array
+          items:
+            type: string
+        matchIds:
+          type: object
+          additionalProperties:
+            type: boolean
+    Player:
+      type: object
+      properties:
+        playerId:
+          type: string
+        displayName:
+          type: string
+        teamId:
+          type: string
+        matchIds:
+          type: object
+          additionalProperties:
+            type: boolean
+        graduationYear:
+          type: integer
+          nullable: true
+    Match:
+      type: object
+      properties:
+        matchId:
+          type: string
+        teamId:
+          type: string
+        date:
+          type: integer
+        opposingTeamName:
+          type: string
+        comment:
+          type: string
+        perPlayerData:
+          $ref: '#/components/schemas/PerPlayerData'
+    PerPlayerData:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/PerPlayerEntry'
+    PerPlayerEntry:
+      type: object
+      properties:
+        games:
+          type: object
+          properties:
+            '1':
+              $ref: '#/components/schemas/GameEntry'
+            '2':
+              $ref: '#/components/schemas/GameEntry'
+            '3':
+              $ref: '#/components/schemas/GameEntry'
+          required:
+            - '1'
+            - '2'
+            - '3'
+    GameEntry:
+      type: object
+      properties:
+        Wood:
+          type: integer
+        Score:
+          type: integer
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+    Error:
+      type: object
+      properties:
+        error:
+          type: string

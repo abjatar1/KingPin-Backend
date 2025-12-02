@@ -1,0 +1,293 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-12-02T00:00:00.000Z",
+  "__export_source": "kingpin-backend",
+  "resources": [
+    {
+      "_id": "wrk_kingpin",
+      "_type": "workspace",
+      "name": "KingPin Backend",
+      "description": "Insomnia workspace for KingPin Backend API",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_1",
+      "_type": "environment",
+      "parentId": "wrk_kingpin",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:3000",
+        "userId": "",
+        "teamId": "",
+        "playerId": "",
+        "matchId": "",
+        "password": "password123"
+      }
+    },
+    {
+      "_id": "fld_accounts",
+      "_type": "request_group",
+      "parentId": "wrk_kingpin",
+      "name": "Accounts"
+    },
+    {
+      "_id": "fld_teams",
+      "_type": "request_group",
+      "parentId": "wrk_kingpin",
+      "name": "Teams / Players / Matches"
+    },
+
+    {
+      "_id": "req_create_account",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Create Account",
+      "method": "POST",
+      "url": "{{ base_url }}/accounts",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"flow+insomnia@example.com\",\n  \"password\": \"{{ password }}\",\n  \"username\": \"insomnia_user\",\n  \"displayName\": \"Insomnia User\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ]
+    },
+
+    {
+      "_id": "req_get_account",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Get Public User",
+      "method": "GET",
+      "url": "{{ base_url }}/accounts/{{ userId }}"
+    },
+
+    {
+      "_id": "req_change_password",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Change Password",
+      "method": "POST",
+      "url": "{{ base_url }}/accounts/{{ userId }}/password",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"currentPassword\": \"{{ password }}\",\n  \"newPassword\": \"newPassword123\"\n}"
+      },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_change_displayName",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Change Display Name",
+      "method": "POST",
+      "url": "{{ base_url }}/accounts/{{ userId }}/displayName",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"password\": \"{{ password }}\",\n  \"displayName\": \"Updated Insomnia User\"\n}"
+      },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_delete_account",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Delete Account",
+      "method": "DELETE",
+      "url": "{{ base_url }}/accounts/{{ userId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"password\": \"{{ password }}\"\n}"
+      },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_create_team",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Create Team",
+      "method": "POST",
+      "url": "{{ base_url }}/users/{{ userId }}/teams",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"password\": \"{{ password }}\",\n  \"displayName\": \"Insomnia Team\"\n}"
+      },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_list_teams",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "List Teams for User",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams"
+    },
+
+    {
+      "_id": "req_get_team",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Get Team",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}"
+    },
+
+    {
+      "_id": "req_update_team",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Update Team",
+      "method": "PUT",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"displayName\": \"Renamed Team\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_delete_team",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Delete Team",
+      "method": "DELETE",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_create_player",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Create Player",
+      "method": "POST",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/players",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"displayName\": \"Player One\",\n  \"graduationYear\": 2026\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_list_players",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "List Players",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/players"
+    },
+
+    {
+      "_id": "req_get_player",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Get Player",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/players/{{ playerId }}"
+    },
+
+    {
+      "_id": "req_update_player",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Update Player",
+      "method": "PUT",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/players/{{ playerId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"displayName\": \"Updated Player\",\n  \"graduationYear\": 2027\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_delete_player",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Delete Player",
+      "method": "DELETE",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/players/{{ playerId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_create_match",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Create Match",
+      "method": "POST",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"date\": {{= new Date().getTime() }},\n  \"opposingTeamName\": \"Opponents\",\n  \"comment\": \"Friendly match\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_list_matches",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "List Matches",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches"
+    },
+
+    {
+      "_id": "req_get_match",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Get Match",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches/{{ matchId }}"
+    },
+
+    {
+      "_id": "req_update_match",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Update Match",
+      "method": "PUT",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches/{{ matchId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"comment\": \"Updated comment\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_delete_match",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Delete Match",
+      "method": "DELETE",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches/{{ matchId }}",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\"\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_set_game_entry",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Set Player Game Entry (gameIndex=1)",
+      "method": "PUT",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches/{{ matchId }}/players/{{ playerId }}/games/1",
+      "body": { "mimeType": "application/json", "text": "{\n  \"password\": \"{{ password }}\",\n  \"Wood\": 5,\n  \"Score\": 150\n}" },
+      "headers": [{ "name": "Content-Type", "value": "application/json" }]
+    },
+
+    {
+      "_id": "req_get_perplayer",
+      "_type": "request",
+      "parentId": "fld_teams",
+      "name": "Get Per-Player Data",
+      "method": "GET",
+      "url": "{{ base_url }}/users/{{ userId }}/teams/{{ teamId }}/matches/{{ matchId }}/players/{{ playerId }}"
+    },
+
+    {
+      "_id": "req_root",
+      "_type": "request",
+      "parentId": "wrk_kingpin",
+      "name": "Root Hello",
+      "method": "GET",
+      "url": "{{ base_url }}/"
+    }
+  ]
+}
