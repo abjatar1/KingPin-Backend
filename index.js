@@ -162,6 +162,26 @@ app.post('/accounts', (req, res) => {
   res.status(201).json({ user: publicUser(users[id]) })
 })
 
+// Login for UI/auth screen
+// POST /auth/login
+// body: { email, password }
+app.post('/auth/login', (req, res) => {
+  let { email, password } = req.body || {}
+  email = sanitizeString(email).toLowerCase()
+  password = sanitizeString(password)
+  if (!email || !password) return res.status(400).json({ ok: false, error: 'email and password required' })
+  const user = Object.values(users).find(u => String(u.email).toLowerCase() === email)
+  if (!user) return res.status(401).json({ ok: false, error: 'invalid credentials' })
+  try {
+    const ok = bcrypt.compareSync(password, user.password)
+    if (!ok) return res.status(401).json({ ok: false, error: 'invalid credentials' })
+    // Return a simple success for the login screen; real auth for protected routes still uses password checks
+    return res.json({ ok: true, user: publicUser(user) })
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: 'internal error' })
+  }
+})
+
 // --- Helpers for teams/players/matches ---
 function publicTeam(team) {
   if (!team) return null

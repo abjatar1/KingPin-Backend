@@ -55,6 +55,22 @@
     },
 
     {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "fld_accounts",
+      "name": "Login (email + password)",
+      "method": "POST",
+      "url": "{{ base_url }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"flow+insomnia@example.com\",\n  \"password\": \"{{ password }}\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ]
+    },
+
+    {
       "_id": "req_get_account",
       "_type": "request",
       "parentId": "fld_accounts",
