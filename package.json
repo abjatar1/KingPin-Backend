@@ -2,7 +2,7 @@
   "dependencies": {
     "bcrypt": "^5.1.0",
     "express": "^5.1.0",
-    "node-json-db": "^2.4.2",
+    "mongoose": "^8.0.0",
     "uuid": "^9.0.0"
   },
   "name": "kingpin-backend",

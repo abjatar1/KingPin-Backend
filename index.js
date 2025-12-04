@@ -58,8 +58,34 @@ const port = 3000
 
 app.use(express.json())
 
-// Load persisted data (or initialize empty collections)
-const { users, teams, players, matches } = db.loadAll()
+// Global data store (loaded from MongoDB)
+let users = {}
+let teams = {}
+let players = {}
+let matches = {}
+
+// Load persisted data from MongoDB on startup
+async function initDb() {
+  try {
+    const data = await db.loadAll()
+    users = data.users
+    teams = data.teams
+    players = data.players
+    matches = data.matches
+    console.info('[app] Database initialized from MongoDB')
+  } catch (err) {
+    console.error('[app] Error initializing database:', err.message)
+    process.exit(1)
+  }
+}
+
+// Initialize DB before starting server
+initDb().then(() => {
+  const port = 3000
+  if (require.main === module) {
+    app.listen(port, () => console.log(`Example app listening on port ${port}`))
+  }
+})
 
 // Helper: get safe public view of a user (omit password)
 function publicUser(user) {
@@ -158,7 +184,7 @@ app.post('/accounts', (req, res) => {
     displayName,
     teamIds: {}
   }
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.status(201).json({ user: publicUser(users[id]) })
 })
 
@@ -242,7 +268,7 @@ app.post('/users/:userId/teams', requireValidPassword, (req, res) => {
   }
   teams[teamId] = team
   user.teamIds[teamId] = true
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.status(201).json({ team: publicTeam(team) })
 })
 
@@ -269,7 +295,7 @@ app.put('/users/:userId/teams/:teamId', requireValidPassword, (req, res) => {
   const check = ensureUserAndTeam(userId, teamId)
   if (!check.ok) return res.status(check.code).json({ error: check.msg })
   check.team.displayName = sanitizeString(displayName) || check.team.displayName
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ team: publicTeam(check.team) })
 })
 
@@ -280,7 +306,7 @@ app.delete('/users/:userId/teams/:teamId', requireValidPassword, (req, res) => {
   if (!check.ok) return res.status(check.code).json({ error: check.msg })
   deleteTeamCascade(teamId)
   delete users[userId].teamIds[teamId]
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ success: true })
 })
 
@@ -298,7 +324,7 @@ app.post('/users/:userId/teams/:teamId/players', requireValidPassword, (req, res
   const player = { playerId, displayName, teamId, matchIds: {}, graduationYear: gy }
   players[playerId] = player
   check.team.playerIds[playerId] = true
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.status(201).json({ player: publicPlayer(player) })
 })
 
@@ -335,7 +361,7 @@ app.put('/users/:userId/teams/:teamId/players/:playerId', requireValidPassword, 
     if (gy === null || gy < 1900 || gy > 2100) return res.status(400).json({ error: 'graduationYear must be a valid year' })
     p.graduationYear = gy
   }
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ player: publicPlayer(p) })
 })
 
@@ -353,7 +379,7 @@ app.delete('/users/:userId/teams/:teamId/players/:playerId', requireValidPasswor
   }
   delete players[playerId]
   delete check.team.playerIds[playerId]
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ success: true })
 })
 
@@ -382,7 +408,7 @@ app.post('/users/:userId/teams/:teamId/matches', requireValidPassword, (req, res
   const match = { matchId, teamId, date, opposingTeamName, comment: matchComment, perPlayerData }
   matches[matchId] = match
   check.team.matchIds[matchId] = true
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.status(201).json({ match: publicMatch(match) })
 })
 
@@ -416,7 +442,7 @@ app.put('/users/:userId/teams/:teamId/matches/:matchId', requireValidPassword, (
   if (date) m.date = Number(date) || m.date
   if (opposingTeamName) m.opposingTeamName = sanitizeString(opposingTeamName)
   if ('comment' in req.body) m.comment = sanitizeString(req.body.comment)
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ match: publicMatch(m) })
 })
 
@@ -429,7 +455,7 @@ app.delete('/users/:userId/teams/:teamId/matches/:matchId', requireValidPassword
   if (!m || String(m.teamId) !== String(teamId)) return res.status(404).json({ error: 'match not found in team' })
   delete matches[matchId]
   delete check.team.matchIds[matchId]
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ success: true })
 })
 
@@ -457,7 +483,7 @@ app.put('/users/:userId/teams/:teamId/matches/:matchId/players/:playerId/games/:
     Score: Number(Score) || 0
   }
   m.perPlayerData[playerId].games[gi] = entry
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ playerGame: m.perPlayerData[playerId].games[gi] })
 })
 
@@ -488,7 +514,7 @@ app.post('/accounts/:userId/password', requireValidPassword, (req, res) => {
   if (newPassword.length < 8) return res.status(400).json({ error: 'newPassword must be at least 8 characters' })
   const hashed = bcrypt.hashSync(newPassword, 10)
   users[String(userId)].password = hashed
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ success: true })
 })
 
@@ -501,7 +527,7 @@ app.post('/accounts/:userId/displayName', requireValidPassword, (req, res) => {
   displayName = sanitizeString(displayName)
   if (!displayName) return res.status(400).json({ error: 'displayName is required' })
   users[String(userId)].displayName = displayName
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ user: publicUser(users[String(userId)]) })
 })
 
@@ -511,7 +537,7 @@ app.post('/accounts/:userId/displayName', requireValidPassword, (req, res) => {
 app.delete('/accounts/:userId', requireValidPassword, (req, res) => {
   const userId = req.params.userId
   delete users[String(userId)]
-  db.saveAll({ users, teams, players, matches })
+  db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
   res.json({ success: true })
 })
 
@@ -525,13 +551,6 @@ app.get('/accounts/:userId', (req, res) => {
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
-
-// Start server only when run directly. Export `app` for tests.
-if (require.main === module) {
-  app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-  })
-}
 
 module.exports = app
 
