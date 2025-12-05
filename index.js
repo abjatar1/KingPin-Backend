@@ -56,14 +56,19 @@ const db = require('./lib/db')
 const app = express()
 const port = 3000
 
-// CORS middleware - allow all origins
+// CORS middleware - simpler version
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+  res.set('Access-Control-Allow-Origin', '*')
+  res.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH')
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.set('Access-Control-Max-Age', '3600')
+  
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200)
+    res.sendStatus(204)
+    return
   }
+  
   next()
 })
 
