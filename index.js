@@ -14,14 +14,17 @@
         [1] = {
           Wood (int),
           Score (int),
+          isVarsity (boolean)
         },
         [2] = {
           Wood (int),
           Score (int),
+          isVarsity (boolean)
         },
         [3] = {
           Wood (int),
           Score (int),
+          isVarsity (boolean)
         },
       })
     }}
@@ -414,9 +417,9 @@ app.post('/users/:userId/teams/:teamId/matches', requireValidPassword, (req, res
   for (const pid of Object.keys(check.team.playerIds || {})) {
     perPlayerData[pid] = {
       games: {
-        1: { Wood: 0, Score: 0 },
-        2: { Wood: 0, Score: 0 },
-        3: { Wood: 0, Score: 0 }
+        1: { Wood: 0, Score: 0, isVarsity: false },
+        2: { Wood: 0, Score: 0, isVarsity: false },
+        3: { Wood: 0, Score: 0, isVarsity: false }
       }
     }
   }
@@ -478,10 +481,10 @@ app.delete('/users/:userId/teams/:teamId/matches/:matchId', requireValidPassword
 // --- Per-player match data ---
 // Set a game entry for a player in a match:
 // PUT /users/:userId/teams/:teamId/matches/:matchId/players/:playerId/games/:gameIndex
-// body: { password, Wood, Score }
+// body: { password, Wood, Score, isVarsity }
 app.put('/users/:userId/teams/:teamId/matches/:matchId/players/:playerId/games/:gameIndex', requireValidPassword, (req, res) => {
   const { userId, teamId, matchId, playerId, gameIndex } = req.params
-  let { Wood, Score } = req.body || {}
+  let { Wood, Score, isVarsity } = req.body || {}
   const check = ensureUserAndTeam(userId, teamId)
   if (!check.ok) return res.status(check.code).json({ error: check.msg })
   const m = matches[matchId]
@@ -492,11 +495,12 @@ app.put('/users/:userId/teams/:teamId/matches/:matchId/players/:playerId/games/:
   if (!Number.isInteger(gi) || gi < 1 || gi > 3) return res.status(400).json({ error: 'gameIndex must be 1, 2 or 3' })
   if (!m.perPlayerData[playerId]) {
     // initialize perPlayerData for the player with schema
-    m.perPlayerData[playerId] = { games: { 1: { Wood: 0, Score: 0 }, 2: { Wood: 0, Score: 0 }, 3: { Wood: 0, Score: 0 } } }
+    m.perPlayerData[playerId] = { games: { 1: { Wood: 0, Score: 0, isVarsity: false }, 2: { Wood: 0, Score: 0, isVarsity: false }, 3: { Wood: 0, Score: 0, isVarsity: false } } }
   }
   const entry = {
     Wood: Number(Wood) || 0,
-    Score: Number(Score) || 0
+    Score: Number(Score) || 0,
+    isVarsity: Boolean(isVarsity) || false
   }
   m.perPlayerData[playerId].games[gi] = entry
   db.saveAll({ users, teams, players, matches }).catch(err => console.error('[db] save error:', err.message))
@@ -511,10 +515,10 @@ app.get('/users/:userId/teams/:teamId/matches/:matchId/players/:playerId', (req,
   const m = matches[matchId]
   if (!m || String(m.teamId) !== String(teamId)) return res.status(404).json({ error: 'match not found in team' })
   // ensure we return a games object with keys 1..3
-  const pp = m.perPlayerData[playerId] || { games: { 1: { Wood: 0, Score: 0 }, 2: { Wood: 0, Score: 0 }, 3: { Wood: 0, Score: 0 } } }
+  const pp = m.perPlayerData[playerId] || { games: { 1: { Wood: 0, Score: 0, isVarsity: false }, 2: { Wood: 0, Score: 0, isVarsity: false }, 3: { Wood: 0, Score: 0, isVarsity: false } } }
   // fill missing game slots with defaults
   for (const idx of [1,2,3]) {
-    if (!pp.games[idx]) pp.games[idx] = { Wood: 0, Score: 0 }
+    if (!pp.games[idx]) pp.games[idx] = { Wood: 0, Score: 0, isVarsity: false }
   }
   res.json({ perPlayerData: pp })
 })
